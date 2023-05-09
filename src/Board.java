@@ -52,7 +52,21 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 
 		for (int x = 1; x < points.length - 1; ++x) {
 			for (int y = 1; y < points[x].length - 1; ++y) {
+				Point point = points[x][y];
 				// TODO: add von Neuman neighborhood
+				// odd ones are shifted to the right
+				if (point.isGuard())
+					continue;
+
+				int xw = y % 2 == 0 ? x + 1 : x;
+
+				point.setNeighbors(
+						points[xw - 1][y - 1],
+						points[xw][y - 1],
+						points[x + 1][y],
+						points[xw][y + 1],
+						points[xw - 1][y + 1],
+						points[x - 1][y]);
 			}
 		}
 	}
@@ -97,28 +111,15 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 
 		for (x = 0; x < points.length; ++x) {
 			for (y = 0; y < points[x].length; ++y) {
-				// if(points[x][y].type==0){
-				float change = points[x][y].getPressure();
-				if (change > 0.5) {
-					change = 0.5f;
-				}
-				if (change < -0.5f) {
-					change = -0.5f;
-				}
-				float a = 0.5f + change;
-				g.setColor(new Color(a, a, a, 0.7f));
-				// }
-				/*
-				 * else if (points[x][y].type==1){
-				 * g.setColor(new Color(1.0f, 0.0f, 0.0f, 0.7f));
-				 * }
-				 * else if (points[x][y].type==2){
-				 * g.setColor(new Color(0.0f, 1.0f, 0.0f, 0.7f));
-				 * }
-				 */
+				Point point = points[x][y];
+				float a = 0.5f;
+
+				if (point.isGuard())
+					a = 1;
+
+				g.setColor(new Color(a, a, a, point.color));
 
 				int x_offset = y % 2 == 1 ? 0 : size / 2;
-
 				g.fillRect((x * size) + 1 + x_offset, (y * size) + 1, (size - 1), (size -
 						1));
 			}
@@ -131,11 +132,7 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 		int offset = y % 2 == 1 ? 0 : size / 2;
 		int x = (e.getX() - offset) / size;
 		if ((x < points.length) && (x > 0) && (y < points[x].length) && (y > 0)) {
-			if (editType == 0) {
-				points[x][y].clicked();
-			} else {
-				// points[x][y].type= editType;
-			}
+			points[x][y].clicked();
 			this.repaint();
 		}
 	}

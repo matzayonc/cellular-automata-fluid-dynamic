@@ -1,8 +1,8 @@
 public class Point {
 	private boolean guard = false;
 
-	public Point[] neighbors;
-	public float pressure;
+	public Point[] neighbors = { null, null, null, null, null, null };
+	public float color;
 
 	public Point(boolean isOnEdge) {
 		guard = isOnEdge;
@@ -13,8 +13,19 @@ public class Point {
 		return guard;
 	}
 
+	public void setNeighbors(Point nw, Point ne, Point e, Point se, Point sw, Point w) {
+		neighbors[0] = nw;
+		neighbors[1] = ne;
+		neighbors[2] = e;
+		neighbors[3] = se;
+		neighbors[4] = sw;
+		neighbors[5] = w;
+	}
+
 	public void clicked() {
-		pressure = 1;
+		color = 1;
+		for (Point n : neighbors)
+			n.color = 0.7f;
 	}
 
 	public void clear() {
@@ -29,7 +40,7 @@ public class Point {
 		// TODO: pressure update
 	}
 
-	public float getPressure() {
-		return pressure;
+	public float getColor() {
+		return color;
 	}
 }
