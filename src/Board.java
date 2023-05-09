@@ -11,7 +11,7 @@ import javax.swing.event.MouseInputListener;
 public class Board extends JComponent implements MouseInputListener, ComponentListener {
 	private static final long serialVersionUID = 1L;
 	private Point[][] points;
-	private int size = 5;
+	private int size = 12;
 	public int editType = 0;
 
 	public Board(int length, int height) {
@@ -45,8 +45,10 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 		points = new Point[length][height];
 
 		for (int x = 0; x < points.length; ++x)
-			for (int y = 0; y < points[x].length; ++y)
-				points[x][y] = new Point();
+			for (int y = 0; y < points[x].length; ++y) {
+				boolean isOnEdge = (x == 0 || x == points.length - 1 || y == 0 || y == points[x].length - 1);
+				points[x][y] = new Point(isOnEdge);
+			}
 
 		for (int x = 1; x < points.length - 1; ++x) {
 			for (int y = 1; y < points[x].length - 1; ++y) {
@@ -115,18 +117,19 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 				 * }
 				 */
 
-				int x_offset = y == 0 ? 0 : size / 2;
+				int x_offset = y % 2 == 1 ? 0 : size / 2;
 
-				// g.fillRect((x * size) + 1 + x_offset, (y * size) + 1, (size - 1), (size -
-				// 1));
+				g.fillRect((x * size) + 1 + x_offset, (y * size) + 1, (size - 1), (size -
+						1));
 			}
 		}
 
 	}
 
 	public void mouseClicked(MouseEvent e) {
-		int x = e.getX() / size;
 		int y = e.getY() / size;
+		int offset = y % 2 == 1 ? 0 : size / 2;
+		int x = (e.getX() - offset) / size;
 		if ((x < points.length) && (x > 0) && (y < points[x].length) && (y > 0)) {
 			if (editType == 0) {
 				points[x][y].clicked();
@@ -144,8 +147,9 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 	}
 
 	public void mouseDragged(MouseEvent e) {
-		int x = e.getX() / size;
 		int y = e.getY() / size;
+		int offset = y % 2 == 1 ? 0 : size / 2;
+		int x = (e.getX() - offset) / size;
 		if ((x < points.length) && (x > 0) && (y < points[x].length) && (y > 0)) {
 			if (editType == 0) {
 				points[x][y].clicked();
