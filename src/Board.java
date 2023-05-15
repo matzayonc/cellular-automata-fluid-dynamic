@@ -11,7 +11,8 @@ import javax.swing.event.MouseInputListener;
 public class Board extends JComponent implements MouseInputListener, ComponentListener {
 	private static final long serialVersionUID = 1L;
 	private Point[][] points;
-	private int size = 12;
+	private int sizeH = 20;
+	private int sizeW = (int) ((float) sizeH * (Math.sqrt(3) / 2.f));
 	public int editType = 0;
 
 	public Board(int length, int height) {
@@ -54,7 +55,6 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 		for (int x = 1; x < points.length - 1; ++x) {
 			for (int y = 1; y < points[x].length - 1; ++y) {
 				Point point = points[x][y];
-				// TODO: add von Neuman neighborhood
 				// odd ones are shifted to the right
 				if (point.isGuard())
 					continue;
@@ -78,10 +78,10 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 			g.fillRect(0, 0, this.getWidth(), this.getHeight());
 		}
 		g.setColor(Color.GRAY);
-		drawNetting(g, size);
+		drawNetting(g);
 	}
 
-	private void drawNetting(Graphics g, int gridSpace) {
+	private void drawNetting(Graphics g) {
 		Insets insets = getInsets();
 		int firstX = insets.left;
 		int firstY = insets.top;
@@ -91,46 +91,45 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 		int x = firstX;
 		while (x < lastX) {
 			int i = 0;
-			while (i * size < lastX) {
+			while (i * sizeW < lastX) {
 				int offset = 0;
 				if (i % 2 == 0)
-					offset += size / 2;
+					offset += sizeW / 2;
 
-				g.drawLine(x + offset, i * size, x + offset, i * size + size);
+				g.drawLine(x + offset, i * sizeH, x + offset, i * sizeH + sizeH);
 
 				i++;
 			}
 			// g.drawLine(x, firstY, x, lastY);
-			x += gridSpace;
+			x += sizeW;
 		}
-		
+
 		int y = firstY;
 		while (y < lastY) {
 			g.drawLine(firstX, y, lastX, y);
-			y += gridSpace;
+			y += sizeH;
 		}
 
 		for (x = 0; x < points.length; ++x) {
 			for (y = 0; y < points[x].length; ++y) {
 				Point point = points[x][y];
-				
-				if (point.type == 0){
+
+				if (point.type == 0) {
 					g.setColor(new Color(1.0f, 1.0f, 1.0f));
-				}
-				else if (point.type == 1) {
+				} else if (point.type == 1) {
 					float a = 0.5f;
-	
+
 					if (point.isGuard())
 						a = 1;
-	
+
 					g.setColor(new Color(a, a, a, point.color));
 				}
-				
-				else if (point.type == 2){
+
+				else if (point.type == 2) {
 					g.setColor(new Color(1.0f, 0.0f, 0.0f));
 				}
-				int x_offset = y % 2 == 1 ? 0 : size / 2;
-				g.fillRect((x * size) + 1 + x_offset, (y * size) + 1, (size - 1), (size -
+				int x_offset = y % 2 == 1 ? 0 : sizeW / 2;
+				g.fillRect((x * sizeW) + 1 + x_offset, (y * sizeH) + 1, (sizeW - 1), (sizeH -
 						1));
 			}
 		}
@@ -138,36 +137,35 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 	}
 
 	public void mouseClicked(MouseEvent e) {
-		int y = e.getY() / size;
-		int offset = y % 2 == 1 ? 0 : size / 2;
-		int x = (e.getX() - offset) / size;
+		int y = e.getY() / sizeH;
+		int offset = y % 2 == 1 ? 0 : sizeW / 2;
+		int x = (e.getX() - offset) / sizeW;
 		if ((x < points.length) && (x > 0) && (y < points[x].length) && (y > 0)) {
-			if(editType == 1) {
+			if (editType == 1) {
 				points[x][y].clicked();
 				points[x][y].type = editType;
-			}
-			else
+			} else
 				points[x][y].type = editType;
 			this.repaint();
 		}
 	}
 
 	public void componentResized(ComponentEvent e) {
-		int dlugosc = (this.getWidth() / size) + 1;
-		int wysokosc = (this.getHeight() / size) + 1;
+		int dlugosc = (this.getWidth() / sizeW) + 1;
+		int wysokosc = (this.getHeight() / sizeH) + 1;
 		initialize(dlugosc, wysokosc);
 	}
 
 	public void mouseDragged(MouseEvent e) {
-		int y = e.getY() / size;
-		int offset = y % 2 == 1 ? 0 : size / 2;
-		int x = (e.getX() - offset) / size;
+		int y = e.getY() / sizeH;
+		int offset = y % 2 == 1 ? 0 : sizeW / 2;
+		int x = (e.getX() - offset) / sizeW;
 		if ((x < points.length) && (x > 0) && (y < points[x].length) && (y > 0)) {
 			if (editType == 1) {
 				points[x][y].clicked();
 				points[x][y].type = editType;
 			} else {
-				points[x][y].type= editType;
+				points[x][y].type = editType;
 			}
 			this.repaint();
 		}

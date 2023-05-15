@@ -2,7 +2,7 @@ public class Point {
 	private boolean guard = false;
 
 	public Point[] neighbors = { null, null, null, null, null, null };
-	public static Integer[] types = {0, 1, 2};
+	public static Integer[] types = { 0, 1, 2 };
 	public int type;
 	public float color;
 
@@ -29,7 +29,7 @@ public class Point {
 		color = 1;
 		for (Point n : neighbors) {
 			n.type = 1;
-			n.color = 0.7f;
+			n.color = Math.max(0.7f, n.color);
 		}
 	}
 
