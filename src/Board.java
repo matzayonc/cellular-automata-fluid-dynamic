@@ -20,6 +20,7 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 		addMouseMotionListener(this);
 		setBackground(Color.WHITE);
 		setOpaque(true);
+		initialize(length, height);
 	}
 
 	public void iteration() {
@@ -102,7 +103,7 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 			// g.drawLine(x, firstY, x, lastY);
 			x += gridSpace;
 		}
-
+		
 		int y = firstY;
 		while (y < lastY) {
 			g.drawLine(firstX, y, lastX, y);
@@ -112,13 +113,22 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 		for (x = 0; x < points.length; ++x) {
 			for (y = 0; y < points[x].length; ++y) {
 				Point point = points[x][y];
-				float a = 0.5f;
-
-				if (point.isGuard())
-					a = 1;
-
-				g.setColor(new Color(a, a, a, point.color));
-
+				
+				if (point.type == 0){
+					g.setColor(new Color(1.0f, 1.0f, 1.0f));
+				}
+				else if (point.type == 1) {
+					float a = 0.5f;
+	
+					if (point.isGuard())
+						a = 1;
+	
+					g.setColor(new Color(a, a, a, point.color));
+				}
+				
+				else if (point.type == 2){
+					g.setColor(new Color(1.0f, 0.0f, 0.0f));
+				}
 				int x_offset = y % 2 == 1 ? 0 : size / 2;
 				g.fillRect((x * size) + 1 + x_offset, (y * size) + 1, (size - 1), (size -
 						1));
@@ -132,7 +142,12 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 		int offset = y % 2 == 1 ? 0 : size / 2;
 		int x = (e.getX() - offset) / size;
 		if ((x < points.length) && (x > 0) && (y < points[x].length) && (y > 0)) {
-			points[x][y].clicked();
+			if(editType == 1) {
+				points[x][y].clicked();
+				points[x][y].type = editType;
+			}
+			else
+				points[x][y].type = editType;
 			this.repaint();
 		}
 	}
@@ -148,10 +163,11 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 		int offset = y % 2 == 1 ? 0 : size / 2;
 		int x = (e.getX() - offset) / size;
 		if ((x < points.length) && (x > 0) && (y < points[x].length) && (y > 0)) {
-			if (editType == 0) {
+			if (editType == 1) {
 				points[x][y].clicked();
+				points[x][y].type = editType;
 			} else {
-				// points[x][y].type= editType;
+				points[x][y].type= editType;
 			}
 			this.repaint();
 		}
