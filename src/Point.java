@@ -25,7 +25,7 @@ public class Point {
 	public void clicked() {
 		color = 1;
 		for (Point n : neighbors)
-			n.color = 0.7f;
+			n.color = Math.max(0.7f, n.color);
 	}
 
 	public void clear() {
