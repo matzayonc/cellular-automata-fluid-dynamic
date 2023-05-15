@@ -53,13 +53,13 @@ public class GUI extends JPanel implements ActionListener, ChangeListener {
 		pred.addChangeListener(this);
 		pred.setValue(maxDelay - timer.getDelay());
 		
-	//	drawType = new JComboBox<Integer>(Point.types);
-	//	drawType.addActionListener(this);
-	//	drawType.setActionCommand("drawType");
+		drawType = new JComboBox<Integer>(Point.types);
+		drawType.addActionListener(this);
+		drawType.setActionCommand("drawType");
 
 		buttonPanel.add(start);
 		buttonPanel.add(clear);
-//		buttonPanel.add(drawType);
+		buttonPanel.add(drawType);
 		buttonPanel.add(pred);
 
 		board = new Board(1024, 768 - buttonPanel.getHeight());

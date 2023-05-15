@@ -2,6 +2,8 @@ public class Point {
 	private boolean guard = false;
 
 	public Point[] neighbors = { null, null, null, null, null, null };
+	public static Integer[] types = { 0, 1, 2 };
+	public int type;
 	public float color;
 
 	public Point(boolean isOnEdge) {
@@ -23,12 +25,16 @@ public class Point {
 	}
 
 	public void clicked() {
+		type = 1;
 		color = 1;
-		for (Point n : neighbors)
+		for (Point n : neighbors) {
+			n.type = 1;
 			n.color = Math.max(0.7f, n.color);
+		}
 	}
 
 	public void clear() {
+		type = 0;
 		// TODO: clear velocity and pressure
 	}
 
