@@ -4,7 +4,6 @@ public class Point {
 	public Point[] neighbors = { null, null, null, null, null, null };
 	public static Integer[] types = { 0, 1, 2 };
 	public int type;
-	public float color;
 	public int velocity;
 	public int vel_direction;
 
@@ -20,6 +19,11 @@ public class Point {
 		return guard;
 	}
 
+	public void update() {
+		collision2();
+		collision3();
+	}
+
 	public void setNeighbors(Point nw, Point ne, Point e, Point se, Point sw, Point w) {
 		neighbors[0] = nw;
 		neighbors[1] = ne;
@@ -29,16 +33,11 @@ public class Point {
 		neighbors[5] = w;
 	}
 
-	public void clicked() {
+	public void fill() {
 		type = 1;
-		color = 1;
-		velocity = 1;
-		vel_direction = 2;
-
-		for (Point n : neighbors) {
-			n.type = 1;
-			n.color = Math.max(0.7f, n.color);
-		}
+		staticParticle = true;
+		for (int i = 0; i < outs.length; ++i)
+			outs[i] = true;
 	}
 
 	public void clear() {
@@ -105,10 +104,19 @@ public class Point {
 	}
 
 	private boolean in(int index) {
+		if (neighbors[index] == null)
+			return false;
 		return neighbors[index].out((index + 3) % 6);
 	}
 
-	public float getColor() {
-		return color;
+	public float getColorIntensity() {
+		int c = 0;
+		for (int i = 0; i < 6; ++i)
+			if (out(i))
+				++c;
+		if (staticParticle)
+			++c;
+
+		return 1 - (c / 7.0f);
 	}
 }
