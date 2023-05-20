@@ -8,6 +8,7 @@ public class Point {
 	public int vel_direction;
 
 	private boolean[] outs = { false, false, false, false, false, false };
+	private boolean[] ins = { false, false, false, false, false, false };
 	private boolean staticParticle = false;
 
 	public Point(boolean isOnEdge) {
@@ -15,13 +16,23 @@ public class Point {
 		clear();
 	}
 
-	public boolean isGuard() {
-		return guard;
+	public void move() {
+		for (int i = 0; i < 6; i++) {
+			if (neighbors[i] != null)
+				ins[i] = neighbors[i].outAndClear((i + 3) % 6);
+		}
 	}
 
 	public void update() {
 		collision2();
 		collision3();
+
+		// all remaining particles move to opposite directions
+		for (int i = 0; i < 6; i++)
+			if (ins[i]) {
+				ins[i] = false;
+				outs[(i + 3) % 6] = true;
+			}
 	}
 
 	public void setNeighbors(Point nw, Point ne, Point e, Point se, Point sw, Point w) {
@@ -43,8 +54,14 @@ public class Point {
 	public void clear() {
 		type = 0;
 		staticParticle = false;
-		for (int i = 0; i < neighbors.length; ++i)
+		for (int i = 0; i < neighbors.length; ++i) {
+			ins[i] = false;
 			outs[i] = false;
+		}
+	}
+
+	public boolean isGuard() {
+		return guard;
 	}
 
 	public void collision2() {
@@ -99,24 +116,30 @@ public class Point {
 		}
 	}
 
-	public boolean out(int index) {
-		return outs[index];
+	public boolean outAndClear(int index) {
+		boolean ret = outs[index];
+		outs[index] = false;
+		return ret;
 	}
 
-	private boolean in(int index) {
-		if (neighbors[index] == null)
-			return false;
-		return neighbors[index].out((index + 3) % 6);
+	public boolean in(int index) {
+		return ins[index];
 	}
 
 	public float getColorIntensity() {
 		int c = 0;
 		for (int i = 0; i < 6; ++i)
-			if (out(i))
+			if (outs[i])
 				++c;
 		if (staticParticle)
 			++c;
 
 		return 1 - (c / 7.0f);
+	}
+
+	public void spawn(float chance) {
+		for (int i = 1; i <= 3; ++i)
+			if (Math.random() < chance)
+				outs[(i + 3) % 6] = true;
 	}
 }
