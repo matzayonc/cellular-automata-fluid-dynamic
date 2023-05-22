@@ -38,16 +38,12 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 			for (int y = 1; y < points[x].length - 1; ++y)
 				points[x][y].update();
 
-		for (int x = 0; x < points.length; ++x)
-			for (int y = 0; y < points[x].length; ++y)
-				if(x <= 1 || y <= 1 || x >= points.length - 2 || y >= points[x].length - 2) points[x][y].clear();
-		
 		this.repaint();
 	}
 
 	public void clear() {
-		for (int x = 0; x < points.length; ++x)
-			for (int y = 0; y < points[x].length; ++y) {
+		for (int x = 1; x < points.length - 1; ++x)
+			for (int y = 1; y < points[x].length - 1; ++y) {
 				points[x][y].clear();
 			}
 		this.repaint();
@@ -62,6 +58,11 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 				points[x][y] = new Point(isOnEdge);
 			}
 
+		for (int x = 0; x < points.length; ++x)
+			for (int y = 0; y < points[x].length; ++y)
+				if(x <= 0 || y <= 0 || x >= points.length - 1 || y >= points[x].length - 1)
+					points[x][y].type = 2;
+		
 		for (int x = 1; x < points.length - 1; ++x) {
 			for (int y = 1; y < points[x].length - 1; ++y) {
 				Point point = points[x][y];
