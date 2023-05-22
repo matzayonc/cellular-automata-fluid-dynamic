@@ -12,8 +12,10 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 	private static final long serialVersionUID = 1L;
 	private Point[][] points;
 	private int sizeH = 20;
-	private int sizeW = (int) ((float) sizeH * (Math.sqrt(3) / 2.f));
+	private int sizeW = (int) ((float) sizeH / (Math.sqrt(3) / 2.f));
 	public int editType = 0;
+
+	static final float flowRate = 0.1f;
 
 	public Board(int length, int height) {
 		addMouseListener(this);
@@ -25,13 +27,21 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 	}
 
 	public void iteration() {
-		for (int x = 1; x < points.length - 1; ++x)
-			for (int y = 1; y < points[x].length - 1; ++y)
-				points[x][y].updateVelocity();
+		for (int y = 0; y < points[0].length; ++y)
+			points[0][y].spawn(flowRate);
+
+		for (int x = 0; x < points.length; ++x)
+			for (int y = 0; y < points[x].length; ++y)
+				points[x][y].move();
 
 		for (int x = 1; x < points.length - 1; ++x)
 			for (int y = 1; y < points[x].length - 1; ++y)
-				points[x][y].updatePresure();
+				points[x][y].update();
+
+		for (int x = 0; x < points.length; ++x)
+			for (int y = 0; y < points[x].length; ++y)
+				if(x <= 1 || y <= 1 || x >= points.length - 2 || y >= points[x].length - 2) points[x][y].clear();
+		
 		this.repaint();
 	}
 
@@ -97,7 +107,6 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 					offset += sizeW / 2;
 
 				g.drawLine(x + offset, i * sizeH, x + offset, i * sizeH + sizeH);
-
 				i++;
 			}
 			// g.drawLine(x, firstY, x, lastY);
@@ -114,15 +123,16 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 			for (y = 0; y < points[x].length; ++y) {
 				Point point = points[x][y];
 
-				if (point.type == 0) {
-					g.setColor(new Color(1.0f, 1.0f, 1.0f));
-				} else if (point.type == 1) {
-					float a = 0.5f;
+				if (point.type == 0 || point.type == 1) {
+					float c = point.getColorIntensity();
+					g.setColor(new Color(c, c, c));
+					// } else if (point.type == 1) {
+					// float a = 0.5f;
 
-					if (point.isGuard())
-						a = 1;
+					// if (point.isGuard())
+					// a = 1;
 
-					g.setColor(new Color(a, a, a, point.color));
+					// g.setColor(new Color(a, a, a, point.color));
 				}
 
 				else if (point.type == 2) {
@@ -134,6 +144,14 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 			}
 		}
 
+	}		
+	public void interact(Point point, int type) {
+		point.type = editType;
+
+		if (type == 0)
+			point.fill();
+		else if (type == 1)
+			point.clear();
 	}
 
 	public void mouseClicked(MouseEvent e) {
@@ -141,32 +159,23 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 		int offset = y % 2 == 1 ? 0 : sizeW / 2;
 		int x = (e.getX() - offset) / sizeW;
 		if ((x < points.length) && (x > 0) && (y < points[x].length) && (y > 0)) {
-			if (editType == 1) {
-				points[x][y].clicked();
-				points[x][y].type = editType;
-			} else
-				points[x][y].type = editType;
+			interact(points[x][y], editType);
 			this.repaint();
 		}
 	}
-
+	
 	public void componentResized(ComponentEvent e) {
-		int dlugosc = (this.getWidth() / sizeW) + 1;
-		int wysokosc = (this.getHeight() / sizeH) + 1;
-		initialize(dlugosc, wysokosc);
+		int width = (this.getWidth() / sizeW) + 1;
+		int length = (this.getHeight() / sizeH) + 1;
+		initialize(width, length);
 	}
-
+	
 	public void mouseDragged(MouseEvent e) {
 		int y = e.getY() / sizeH;
 		int offset = y % 2 == 1 ? 0 : sizeW / 2;
 		int x = (e.getX() - offset) / sizeW;
 		if ((x < points.length) && (x > 0) && (y < points[x].length) && (y > 0)) {
-			if (editType == 1) {
-				points[x][y].clicked();
-				points[x][y].type = editType;
-			} else {
-				points[x][y].type = editType;
-			}
+			interact(points[x][y], editType);
 			this.repaint();
 		}
 	}
