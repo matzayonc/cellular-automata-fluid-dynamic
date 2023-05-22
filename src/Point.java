@@ -65,54 +65,63 @@ public class Point {
 	}
 
 	public void collision2() {
-		Point a = null, b = null;
-		boolean collided = false;
-		if (neighbors[0].vel_direction + neighbors[3].vel_direction == 0) {
-			a = neighbors[0];
-			b = neighbors[3];
-			collided = true;
+		if (ins[0] && ins[3]) {
+			if(Math.random()<0.5){
+				outs[1]=true;
+				outs[4]=true;
+			}
+			else{
+				outs[2]=true;
+				outs[5]=true;
+			}
+			ins[0]=false;
+			ins[3]=false;
 
 		}
-		if (neighbors[1].vel_direction + neighbors[4].vel_direction == 0) {
-			a = neighbors[1];
-			b = neighbors[4];
-			collided = true;
+		if (ins[1] && ins[4]) {
+			if(Math.random()<0.5){
+				outs[0]=true;
+				outs[3]=true;
+			}
+			else{
+				outs[2]=true;
+				outs[5]=true;
+			}
+			ins[1]=false;
+			ins[4]=false;
 		}
-		if (neighbors[2].vel_direction + neighbors[5].vel_direction == 0) {
-			a = neighbors[2];
-			b = neighbors[5];
-			collided = true;
-		}
-		if (collided) {
-			int temp = a.vel_direction;
-			a.vel_direction = b.vel_direction;
-			b.vel_direction = temp;
+		if (ins[2] && ins[5]) {
+			if(Math.random()<0.5){
+				outs[1]=true;
+				outs[4]=true;
+			}
+			else{
+				outs[0]=true;
+				outs[3]=true;
+			}
+			ins[2]=false;
+			ins[5]=false;
 		}
 	}
 
 	public void collision3() {
-		Point a = null, b = null, c = null;
-		boolean collided = false;
-		int sum1 = neighbors[0].vel_direction + neighbors[2].vel_direction + neighbors[4].vel_direction;
-		int sum2 = neighbors[1].vel_direction + neighbors[3].vel_direction + neighbors[5].vel_direction;
-		if (sum1 == 2 || sum1 == -2) {
-			a = neighbors[0];
-			b = neighbors[2];
-			c = neighbors[4];
-			collided = true;
+		if (ins[0] && ins[2] && ins[4]) {
+			outs[1] = true;
+			outs[3] = true;
+			outs[5] = true;
+			ins[0]=false;
+			ins[2]=false;
+			ins[4]=false;
 
 		}
-		if (sum2 == 2 || sum2 == -2) {
-			a = neighbors[1];
-			b = neighbors[3];
-			c = neighbors[5];
-			collided = true;
-		}
+		if (ins[1] && ins[3] && ins[5]) {
+			outs[0] = true;
+			outs[2] = true;
+			outs[4] = true;
+			ins[1]=false;
+			ins[3]=false;
+			ins[5]=false;
 
-		if (collided) {
-			a.vel_direction = a.vel_direction * (-1);
-			b.vel_direction = b.vel_direction * (-1);
-			c.vel_direction = c.vel_direction * (-1);
 		}
 	}
 
