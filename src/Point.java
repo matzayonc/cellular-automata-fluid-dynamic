@@ -30,8 +30,14 @@ public class Point {
 		// all remaining particles move to opposite directions
 		for (int i = 0; i < 6; i++)
 			if (ins[i]) {
-				ins[i] = false;
-				outs[(i + 3) % 6] = true;
+				if(neighbors[((i + 3) % 6)].type == 2) {
+					ins[i] = false;
+					outs[i] = true;
+				}
+				else {
+					ins[i] = false;
+					outs[(i + 3) % 6] = true;
+				}
 			}
 	}
 
@@ -121,7 +127,6 @@ public class Point {
 			ins[1]=false;
 			ins[3]=false;
 			ins[5]=false;
-
 		}
 	}
 
