@@ -196,6 +196,6 @@ public class Point implements Runnable {
 	public void spawn(float chance) {
 		for (int i = 1; i <= 3; ++i)
 			if (Math.random() < chance)
-				outs[(i + 3) % 6] = true;
+				outs[i % 6] = true;
 	}
 }
