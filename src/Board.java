@@ -11,11 +11,14 @@ import javax.swing.event.MouseInputListener;
 public class Board extends JComponent implements MouseInputListener, ComponentListener {
 	private static final long serialVersionUID = 1L;
 	private Point[][] points;
-	private int sizeH = 20;
+	private int sizeH = 2;
 	private int sizeW = (int) ((float) sizeH / (Math.sqrt(3) / 2.f));
 	public int editType = 0;
 
 	static final float flowRate = 0.1f;
+	static int iterations = 0;
+	static int iterationsPerTiming = 100;
+	long startTime = 0;
 
 	public Board(int length, int height) {
 		addMouseListener(this);
@@ -26,17 +29,42 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 		initialize(length, height);
 	}
 
+	public void keepTime() {
+		if (iterations % iterationsPerTiming == 0) {
+			long endTime = System.currentTimeMillis();
+			if (startTime != 0)
+				System.out.println(
+						"Time for " + iterations + " iterations: " + (startTime - endTime) + " milliseconds");
+			startTime = System.currentTimeMillis();
+
+		}
+		iterations++;
+	}
+
 	public void iteration() {
+		keepTime();
+
 		for (int y = 0; y < points[0].length; ++y)
 			points[0][y].spawn(flowRate);
+
+		long startTime = System.currentTimeMillis();
 
 		for (int x = 0; x < points.length; ++x)
 			for (int y = 0; y < points[x].length; ++y)
 				points[x][y].move();
 
+		long moveTime = System.currentTimeMillis();
+
 		for (int x = 1; x < points.length - 1; ++x)
 			for (int y = 1; y < points[x].length - 1; ++y)
-				points[x][y].update();
+				points[x][y].run();
+
+		long endTime = System.currentTimeMillis();
+		long executionTime = endTime - startTime;
+
+		if (iterations % 100 == 0)
+			System.out.println(
+					"Move time: " + (moveTime - startTime) + ";\tExecution time: " + executionTime + " milliseconds");
 
 		this.repaint();
 	}
@@ -60,9 +88,13 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 
 		for (int x = 0; x < points.length; ++x)
 			for (int y = 0; y < points[x].length; ++y)
-				if(x <= 0 || y <= 0 || x >= points.length - 1 || y >= points[x].length - 1)
+				if (x <= 0 || y <= 0 || x >= points.length - 1 || y >= points[x].length - 1)
 					points[x][y].type = 2;
-		
+
+		for (int x = 10; x < 500; x++)
+			for (int y = 10; y < 300; y++)
+				points[x][y].fill();
+
 		for (int x = 1; x < points.length - 1; ++x) {
 			for (int y = 1; y < points[x].length - 1; ++y) {
 				Point point = points[x][y];
@@ -100,25 +132,25 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 		int lastY = this.getHeight() - insets.bottom;
 
 		int x = firstX;
-		while (x < lastX) {
-			int i = 0;
-			while (i * sizeW < lastX) {
-				int offset = 0;
-				if (i % 2 == 0)
-					offset += sizeW / 2;
+		// while (x < lastX) {
+		// int i = 0;
+		// while (i * sizeW < lastX) {
+		// int offset = 0;
+		// if (i % 2 == 0)
+		// offset += sizeW / 2;
 
-				g.drawLine(x + offset, i * sizeH, x + offset, i * sizeH + sizeH);
-				i++;
-			}
-			// g.drawLine(x, firstY, x, lastY);
-			x += sizeW;
-		}
+		// g.drawLine(x + offset, i * sizeH, x + offset, i * sizeH + sizeH);
+		// i++;
+		// }
+		// // g.drawLine(x, firstY, x, lastY);
+		// x += sizeW;
+		// }
 
 		int y = firstY;
-		while (y < lastY) {
-			g.drawLine(firstX, y, lastX, y);
-			y += sizeH;
-		}
+		// while (y < lastY) {
+		// g.drawLine(firstX, y, lastX, y);
+		// y += sizeH;
+		// }
 
 		for (x = 0; x < points.length; ++x) {
 			for (y = 0; y < points[x].length; ++y) {
@@ -145,7 +177,8 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 			}
 		}
 
-	}		
+	}
+
 	public void interact(Point point, int type) {
 		point.type = editType;
 
@@ -164,13 +197,13 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 			this.repaint();
 		}
 	}
-	
+
 	public void componentResized(ComponentEvent e) {
 		int width = (this.getWidth() / sizeW) + 1;
 		int length = (this.getHeight() / sizeH) + 1;
 		initialize(width, length);
 	}
-	
+
 	public void mouseDragged(MouseEvent e) {
 		int y = e.getY() / sizeH;
 		int offset = y % 2 == 1 ? 0 : sizeW / 2;
