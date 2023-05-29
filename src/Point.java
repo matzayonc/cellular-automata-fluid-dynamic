@@ -53,8 +53,10 @@ public class Point {
 	public void fill() {
 		type = 1;
 		staticParticle = true;
-		for (int i = 0; i < outs.length; ++i)
+		for (int i = 0; i < outs.length; ++i){
 			outs[i] = true;
+			staticParticle = false;
+		}
 	}
 
 	public void clear() {
@@ -106,6 +108,42 @@ public class Point {
 				outs[3]=true;
 			}
 			ins[2]=false;
+			ins[5]=false;
+		}
+		if (ins[0] && ins[4] && !staticParticle) {
+			outs[2]=true;
+			staticParticle=true;
+			ins[0]=false;
+			ins[4]=false;
+		}
+		if (ins[1] && ins[5] && !staticParticle) {
+			outs[3]=true;
+			staticParticle=true;
+			ins[1]=false;
+			ins[5]=false;
+		}
+		if (ins[2] && ins[0] && !staticParticle) {
+			outs[4]=true;
+			staticParticle=true;
+			ins[2]=false;
+			ins[0]=false;
+		}
+		if (ins[1] && ins[3] && !staticParticle) {
+			outs[5]=true;
+			staticParticle=true;
+			ins[1]=false;
+			ins[3]=false;
+		}
+		if (ins[2] && ins[4] && !staticParticle) {
+			outs[0]=true;
+			staticParticle=true;
+			ins[2]=false;
+			ins[4]=false;
+		}
+		if (ins[3] && ins[5] && !staticParticle) {
+			outs[1]=true;
+			staticParticle=true;
+			ins[3]=false;
 			ins[5]=false;
 		}
 	}
