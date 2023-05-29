@@ -14,6 +14,8 @@ public class Point implements Runnable {
 
 	public static int[] lookup = new int[256];
 
+	public int in = 0;
+
 	public Point(boolean isOnEdge) {
 		guard = isOnEdge;
 		recalculateLookup();
@@ -50,9 +52,9 @@ public class Point implements Runnable {
 					continue;
 
 				if (neighbors[i].type == 2)
-					ins[i] = true;
+					in |= 1 << i + 1;
 				else {
-					neighbors[i].ins[(i + 3) % 6] = true;
+					neighbors[i].in |= 1 << ((i + 3) % 6) + 1;
 					neighbors[i].changed = true;
 				}
 			}
@@ -60,7 +62,8 @@ public class Point implements Runnable {
 
 	public void run() {
 		boolean p = Math.random() < 0.5;
-		fromInt(lookup[toInt(p)]);
+		fromInt(lookup[in | (p ? 1 : 0)]);
+		in = 0;
 	}
 
 	public int toInt(boolean p) {

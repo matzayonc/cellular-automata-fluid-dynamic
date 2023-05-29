@@ -4,6 +4,10 @@ import java.awt.Insets;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JComponent;
 import javax.swing.event.MouseInputListener;
@@ -16,6 +20,11 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 	public int editType = 0;
 
 	static final float flowRate = 0.5f;
+	static final int threads = 6;
+	ArrayList<Rows> rows = new ArrayList<>();
+	ArrayList<MoveRows> moveRows = new ArrayList<>();
+	ExecutorService executor = Executors.newFixedThreadPool(threads);
+
 	static int iterations = 0;
 	static int iterationsPerTiming = 100;
 	long startTime = 0;
@@ -41,6 +50,17 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 		iterations++;
 	}
 
+	private void await() {
+		try {
+			executor.shutdown();
+			executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+		} catch (Exception e) {
+			System.out.println("Error: " + e);
+		}
+
+		executor = Executors.newFixedThreadPool(threads);
+	}
+
 	public void iteration() {
 		keepTime();
 
@@ -49,15 +69,15 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 
 		long startTime = System.currentTimeMillis();
 
-		for (int x = 0; x < points.length; ++x)
-			for (int y = 0; y < points[x].length; ++y)
-				points[x][y].move();
+		for (MoveRows row : moveRows)
+			executor.submit(row);
 
+		await();
 		long moveTime = System.currentTimeMillis();
 
-		for (int x = 0; x < points.length; ++x)
-			for (int y = 0; y < points[x].length; ++y)
-				points[x][y].run();
+		for (Rows row : rows)
+			executor.submit(row);
+		await();
 
 		long endTime = System.currentTimeMillis();
 		long executionTime = endTime - startTime;
@@ -96,10 +116,6 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 				if (y == 0 || y == points[x].length - 1)
 					points[x][y].type = 2;
 
-		for (int x = 10; x < 500; x++)
-			for (int y = 10; y < 300; y++)
-				points[x][y].fill();
-
 		for (int x = 1; x < points.length - 1; ++x) {
 			for (int y = 1; y < points[x].length - 1; ++y) {
 				Point point = points[x][y];
@@ -117,6 +133,19 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 						points[xw - 1][y + 1],
 						points[x - 1][y]);
 			}
+		}
+
+		rows.clear();
+		moveRows.clear();
+		int perRow = points[0].length + threads - 1 / threads;
+
+		for (int i = 0; i < threads; ++i) {
+			int start = i * perRow;
+			int end = (i + 1) * perRow;
+			if (end > points[0].length)
+				end = points[0].length;
+			rows.add(new Rows(start, end, points));
+			moveRows.add(new MoveRows(start, end, points));
 		}
 	}
 
@@ -137,25 +166,25 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 		int lastY = this.getHeight() - insets.bottom;
 
 		int x = firstX;
-		// while (x < lastX) {
-		// int i = 0;
-		// while (i * sizeW < lastX) {
-		// int offset = 0;
-		// if (i % 2 == 0)
-		// offset += sizeW / 2;
+		while (x < lastX) {
+			int i = 0;
+			while (i * sizeW < lastX) {
+				int offset = 0;
+				if (i % 2 == 0)
+					offset += sizeW / 2;
 
-		// g.drawLine(x + offset, i * sizeH, x + offset, i * sizeH + sizeH);
-		// i++;
-		// }
-		// // g.drawLine(x, firstY, x, lastY);
-		// x += sizeW;
-		// }
+				g.drawLine(x + offset, i * sizeH, x + offset, i * sizeH + sizeH);
+				i++;
+			}
+			// g.drawLine(x, firstY, x, lastY);
+			x += sizeW;
+		}
 
 		int y = firstY;
-		// while (y < lastY) {
-		// g.drawLine(firstX, y, lastX, y);
-		// y += sizeH;
-		// }
+		while (y < lastY) {
+			g.drawLine(firstX, y, lastX, y);
+			y += sizeH;
+		}
 
 		for (x = 0; x < points.length; ++x) {
 			for (y = 0; y < points[x].length; ++y) {
