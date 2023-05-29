@@ -15,7 +15,7 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 	private int sizeW = (int) ((float) sizeH / (Math.sqrt(3) / 2.f));
 	public int editType = 0;
 
-	static final float flowRate = 0.1f;
+	static final float flowRate = 0.5f;
 
 	public Board(int length, int height) {
 		addMouseListener(this);
@@ -28,16 +28,21 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 
 	public void iteration() {
 		for (int y = 0; y < points[0].length; ++y)
-			points[0][y].spawn(flowRate);
+			points[1][y].spawn(flowRate);
 
 		for (int x = 0; x < points.length; ++x)
 			for (int y = 0; y < points[x].length; ++y)
 				points[x][y].move();
 
-		for (int x = 1; x < points.length - 1; ++x)
-			for (int y = 1; y < points[x].length - 1; ++y)
+		for (int x = 0; x < points.length; ++x)
+			for (int y = 0; y < points[x].length; ++y)
 				points[x][y].update();
-
+		
+		for (int y = 1; y < points[0].length - 1; ++y) {
+			points[1][y].clear();
+			points[points.length - 2][y].clear();
+		}
+				
 		this.repaint();
 	}
 
@@ -60,7 +65,7 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 
 		for (int x = 0; x < points.length; ++x)
 			for (int y = 0; y < points[x].length; ++y)
-				if(x <= 0 || y <= 0 || x >= points.length - 1 || y >= points[x].length - 1)
+				if(y == 0 || y == points[x].length - 1)
 					points[x][y].type = 2;
 		
 		for (int x = 1; x < points.length - 1; ++x) {
