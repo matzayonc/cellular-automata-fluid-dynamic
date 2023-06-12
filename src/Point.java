@@ -1,5 +1,6 @@
-public class Point {
+public class Point implements Runnable {
 	private boolean guard = false;
+	private boolean changed = true;
 
 	public Point[] neighbors = { null, null, null, null, null, null };
 	public static Integer[] types = { 0, 1, 2 };
@@ -11,33 +12,90 @@ public class Point {
 	private boolean[] ins = { false, false, false, false, false, false };
 	private boolean staticParticle = false;
 
+	public static int[] lookup = new int[256];
+
+	public int in = 0;
+
 	public Point(boolean isOnEdge) {
 		guard = isOnEdge;
+		recalculateLookup();
 		clear();
 	}
 
-	public void move() {
-		for (int i = 0; i < 6; i++) {
-			if (neighbors[i] != null)
-				ins[i] = neighbors[i].outAndClear((i + 3) % 6);
+	public void recalculateLookup() {
+		for (int i = 0; i < 256; i++) {
+			staticParticle = (i & (1 << 7)) != 0;
+			for (int j = 0; j < 6; j++)
+				ins[j] = (i & (2 << j)) != 0;
+
+			boolean p = (i & 1) == 1;
+			update(p);
+
+			int r = p ? 1 : 0;
+			for (int k = 0; k < 6; k++)
+				if (outs[k])
+					r |= 2 << k; // i += pow(2, i+1)
+			if (staticParticle)
+				r |= 1 << 7;
+
+			lookup[i] = r;
+			clear();
 		}
 	}
 
-	public void update() {
-		collision2();
+	public void move() {
+		for (int i = 0; i < 6; i++)
+			if (outs[i]) {
+				outs[i] = false;
+
+				if (neighbors[i] == null)
+					continue;
+
+				if (neighbors[i].type == 2)
+					in |= 1 << i + 1;
+				else {
+					neighbors[i].in |= 1 << ((i + 3) % 6) + 1;
+					neighbors[i].changed = true;
+				}
+			}
+	}
+
+	public void run() {
+		boolean p = Math.random() < 0.5;
+		fromInt(lookup[in | (p ? 1 : 0)]);
+		in = 0;
+	}
+
+	public int toInt(boolean p) {
+		int r = p ? 0 : 1;
+
+		for (int i = 0; i < 6; i++)
+			if (ins[i]) {
+				r |= 2 << i; // i += pow(2, i+1)
+				ins[i] = false;
+			}
+
+		if (staticParticle)
+			r |= 1 << 7;
+
+		return r;
+	}
+
+	public void fromInt(int i) {
+		staticParticle = (i & (1 << 7)) != 0;
+		for (int j = 0; j < 6; j++)
+			outs[j] = (i & (2 << j)) != 0;
+	}
+
+	public void update(boolean p) {
+		collision2(p);
 		collision3();
 
 		// all remaining particles move to opposite directions
 		for (int i = 0; i < 6; i++)
 			if (ins[i]) {
-				if(neighbors[((i + 3) % 6)].type == 2) {
-					ins[i] = false;
-					outs[i] = true;
-				}
-				else {
-					ins[i] = false;
-					outs[(i + 3) % 6] = true;
-				}
+				ins[i] = false;
+				outs[(i + 3) % 6] = true;
 			}
 	}
 
@@ -72,43 +130,40 @@ public class Point {
 		return guard;
 	}
 
-	public void collision2() {
+	public void collision2(boolean p) {
 		if (ins[0] && ins[3]) {
-			if(Math.random()<0.5){
-				outs[1]=true;
-				outs[4]=true;
+			if (p) {
+				outs[1] = true;
+				outs[4] = true;
+			} else {
+				outs[2] = true;
+				outs[5] = true;
 			}
-			else{
-				outs[2]=true;
-				outs[5]=true;
-			}
-			ins[0]=false;
-			ins[3]=false;
+			ins[0] = false;
+			ins[3] = false;
 
 		}
 		if (ins[1] && ins[4]) {
-			if(Math.random()<0.5){
-				outs[0]=true;
-				outs[3]=true;
+			if (p) {
+				outs[0] = true;
+				outs[3] = true;
+			} else {
+				outs[2] = true;
+				outs[5] = true;
 			}
-			else{
-				outs[2]=true;
-				outs[5]=true;
-			}
-			ins[1]=false;
-			ins[4]=false;
+			ins[1] = false;
+			ins[4] = false;
 		}
 		if (ins[2] && ins[5]) {
-			if(Math.random()<0.5){
-				outs[1]=true;
-				outs[4]=true;
+			if (p) {
+				outs[1] = true;
+				outs[4] = true;
+			} else {
+				outs[0] = true;
+				outs[3] = true;
 			}
-			else{
-				outs[0]=true;
-				outs[3]=true;
-			}
-			ins[2]=false;
-			ins[5]=false;
+			ins[2] = false;
+			ins[5] = false;
 		}
 		if (ins[0] && ins[4] && !staticParticle) {
 			outs[2]=true;
@@ -153,29 +208,19 @@ public class Point {
 			outs[1] = true;
 			outs[3] = true;
 			outs[5] = true;
-			ins[0]=false;
-			ins[2]=false;
-			ins[4]=false;
+			ins[0] = false;
+			ins[2] = false;
+			ins[4] = false;
 
 		}
 		if (ins[1] && ins[3] && ins[5]) {
 			outs[0] = true;
 			outs[2] = true;
 			outs[4] = true;
-			ins[1]=false;
-			ins[3]=false;
-			ins[5]=false;
+			ins[1] = false;
+			ins[3] = false;
+			ins[5] = false;
 		}
-	}
-
-	public boolean outAndClear(int index) {
-		boolean ret = outs[index];
-		outs[index] = false;
-		return ret;
-	}
-
-	public boolean in(int index) {
-		return ins[index];
 	}
 
 	public float getColorIntensity() {
