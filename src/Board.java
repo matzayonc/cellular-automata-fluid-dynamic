@@ -15,7 +15,7 @@ import javax.swing.event.MouseInputListener;
 public class Board extends JComponent implements MouseInputListener, ComponentListener {
 	private static final long serialVersionUID = 1L;
 	private Point[][] points;
-	private int sizeH = 2;
+	private int sizeH = 20;
 	private int sizeW = (int) ((float) sizeH / (Math.sqrt(3) / 2.f));
 	public int editType = 0;
 
@@ -193,13 +193,6 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 				if (point.type == 0 || point.type == 1) {
 					float c = point.getColorIntensity();
 					g.setColor(new Color(c, c, c));
-					// } else if (point.type == 1) {
-					// float a = 0.5f;
-
-					// if (point.isGuard())
-					// a = 1;
-
-					// g.setColor(new Color(a, a, a, point.color));
 				}
 
 				else if (point.type == 2) {
@@ -208,9 +201,27 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 				int x_offset = y % 2 == 1 ? 0 : sizeW / 2;
 				g.fillRect((x * sizeW) + 1 + x_offset, (y * sizeH) + 1, (sizeW - 1), (sizeH -
 						1));
+
+				int offset = 0;
+				if (y % 2 == 0)
+					offset += sizeW / 2;
+				drawFlowLine(g, point, x, y);
+
 			}
 		}
 
+	}
+
+	public void drawFlowLine(Graphics g, Point p, int pointX, int pointY) {
+		int x = pointX * sizeW + (sizeW / 2) + (pointY % 2 == 1 ? 0 : sizeW / 2);
+		int y = pointY * sizeH + (sizeH / 2);
+		g.setColor(Color.BLUE);
+
+		int h = (int) (0.3 * Math.cos(Math.toRadians(p.angle())) * sizeW);
+		int w = (int) (0.3 * Math.sin(Math.toRadians(p.angle())) * sizeH);
+
+		g.drawLine(x - w, y - h, x + w, y + h);
+		g.setColor(Color.BLACK);
 	}
 
 	public void interact(Point point, int type) {
