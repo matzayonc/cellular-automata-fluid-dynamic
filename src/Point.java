@@ -111,7 +111,7 @@ public class Point implements Runnable {
 
 	public void update(boolean p) {
 		collision2(p);
-		collision3();
+		collision3(p);
 
 		// all remaining particles move to opposite directions
 		for (int i = 0; i < 6; i++)
@@ -225,7 +225,8 @@ public class Point implements Runnable {
 		}
 	}
 
-	public void collision3() {
+
+	public void collision3(boolean p) {
 		if (ins[0] && ins[2] && ins[4]) {
 			outs[1] = true;
 			outs[3] = true;
@@ -242,6 +243,48 @@ public class Point implements Runnable {
 			ins[1] = false;
 			ins[3] = false;
 			ins[5] = false;
+		}
+		for (int i=0;i<6;i++){
+			int j=(i+2)%6;
+			int k=(i+5)%6;
+			if(ins[i] && ins[j] && ins[k] && !staticParticle){
+				if(p){
+					outs[(1+i)%6]=true;
+					outs[(3+i)%6]=true;
+					outs[(4+i)%6]=true;
+
+				}
+				else{
+					outs[(2+i)%6]=true;
+					outs[(4+i)%6]=true;
+					staticParticle=true;
+				}
+				ins[i]=false;
+				ins[j]=false;
+				ins[k]=false;
+			}
+		}
+		for (int i=0;i<6;i++){
+			int j=(i+2)%6;
+			int k=(i+3)%6;
+			if(ins[i] && ins[j] && ins[k] && staticParticle){
+				if(p){
+					outs[(1+i)%6]=true;
+					outs[(4+i)%6]=true;
+					outs[(5+i)%6]=true;
+
+				}
+				else{
+					outs[i]=true;
+					outs[(2+i)%6]=true;
+					outs[(4+i)%6]=true;
+					outs[(5+i)%6]=true;
+					staticParticle=false;
+				}
+				ins[i]=false;
+				ins[j]=false;
+				ins[k]=false;
+			}
 		}
 	}
 
