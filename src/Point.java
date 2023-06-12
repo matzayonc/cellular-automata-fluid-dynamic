@@ -1,9 +1,11 @@
+import java.util.ArrayList;
+
 public class Point implements Runnable {
 	private boolean guard = false;
 	private boolean changed = true;
 
 	public Point[] neighbors = { null, null, null, null, null, null };
-	public static Integer[] types = { 0, 1, 2, 3};
+	public static Integer[] types = { 0, 1, 2, 3 };
 	public int type;
 	public int velocity;
 	public int vel_direction;
@@ -11,6 +13,10 @@ public class Point implements Runnable {
 	private boolean[] outs = { false, false, false, false, false, false };
 	private boolean[] ins = { false, false, false, false, false, false };
 	private boolean staticParticle = false;
+
+	private int[] counts = { 0, 0, 0, 0, 0, 0 };
+	private ArrayList<Integer> history = new ArrayList<Integer>();
+	static int historySize = 50;
 
 	public static int[] lookup = new int[256];
 
@@ -61,6 +67,22 @@ public class Point implements Runnable {
 	}
 
 	public void run() {
+		if (historySize > 0) {
+			history.add(in);
+			for (int i = 1; i < 7; i++) {
+				if ((in & (1 << i)) != 0) {
+					counts[i - 1]++;
+				}
+			}
+			if (history.size() > historySize) {
+				int old = history.remove(0);
+				for (int i = 1; i < 7; i++) {
+					if ((old & (1 << i)) != 0) {
+						counts[i - 1]--;
+					}
+				}
+			}
+		}
 		boolean p = Math.random() < 0.5;
 		fromInt(lookup[in | (p ? 1 : 0)]);
 		in = 0;
@@ -111,7 +133,7 @@ public class Point implements Runnable {
 	public void fill() {
 		type = 1;
 		staticParticle = true;
-		for (int i = 0; i < outs.length; ++i){
+		for (int i = 0; i < outs.length; ++i) {
 			outs[i] = true;
 			staticParticle = false;
 		}
@@ -179,40 +201,40 @@ public class Point implements Runnable {
 			ins[5] = false;
 		}
 		if (ins[0] && ins[4] && !staticParticle) {
-			outs[2]=true;
-			staticParticle=true;
-			ins[0]=false;
-			ins[4]=false;
+			outs[2] = true;
+			staticParticle = true;
+			ins[0] = false;
+			ins[4] = false;
 		}
 		if (ins[1] && ins[5] && !staticParticle) {
-			outs[3]=true;
-			staticParticle=true;
-			ins[1]=false;
-			ins[5]=false;
+			outs[3] = true;
+			staticParticle = true;
+			ins[1] = false;
+			ins[5] = false;
 		}
 		if (ins[2] && ins[0] && !staticParticle) {
-			outs[4]=true;
-			staticParticle=true;
-			ins[2]=false;
-			ins[0]=false;
+			outs[4] = true;
+			staticParticle = true;
+			ins[2] = false;
+			ins[0] = false;
 		}
 		if (ins[1] && ins[3] && !staticParticle) {
-			outs[5]=true;
-			staticParticle=true;
-			ins[1]=false;
-			ins[3]=false;
+			outs[5] = true;
+			staticParticle = true;
+			ins[1] = false;
+			ins[3] = false;
 		}
 		if (ins[2] && ins[4] && !staticParticle) {
-			outs[0]=true;
-			staticParticle=true;
-			ins[2]=false;
-			ins[4]=false;
+			outs[0] = true;
+			staticParticle = true;
+			ins[2] = false;
+			ins[4] = false;
 		}
 		if (ins[3] && ins[5] && !staticParticle) {
-			outs[1]=true;
-			staticParticle=true;
-			ins[3]=false;
-			ins[5]=false;
+			outs[1] = true;
+			staticParticle = true;
+			ins[3] = false;
+			ins[5] = false;
 		}
 	}
 
@@ -251,5 +273,20 @@ public class Point implements Runnable {
 		for (int i = 1; i <= 3; ++i)
 			if (Math.random() < chance)
 				outs[i % 6] = true;
+	}
+
+	public float angle() {
+		int s = 0;
+		int n = 0;
+		for (int i = 0; i < 6; i++) {
+			s += counts[i] * i;
+			n += counts[i];
+		}
+
+		if (n == 0)
+			return 0;
+
+		return 30 - 60 * s / n;
+
 	}
 }

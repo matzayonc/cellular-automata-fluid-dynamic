@@ -15,11 +15,12 @@ import javax.swing.event.MouseInputListener;
 public class Board extends JComponent implements MouseInputListener, ComponentListener {
 	private static final long serialVersionUID = 1L;
 	private Point[][] points;
-	private int sizeH = 4;
+	private int sizeH = 20;
 	private int sizeW = (int) ((float) sizeH / (Math.sqrt(3) / 2.f));
 	public int editType = 0;
 
-	static final float flowRate = 0.8f;
+
+	static final float flowRate = 0.5f;
 	static final int threads = 6;
 	ArrayList<Rows> rows = new ArrayList<>();
 	ArrayList<MoveRows> moveRows = new ArrayList<>();
@@ -60,8 +61,9 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 
 		executor = Executors.newFixedThreadPool(threads);
 	}
+	
 
-	/*public void iteration() {
+	public void iteration() {
 		keepTime();
 
 		for (int y = 0; y < points[0].length; ++y)
@@ -92,20 +94,6 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 		}
 
 		this.repaint();
-	}*/
-	public void iteration() {
-		for (int y = 0; y < points[0].length; ++y)
-			points[1][y].spawn(flowRate);
-
-		for (int x = 0; x < points.length; ++x)
-			for (int y = 0; y < points[x].length; ++y)
-				points[x][y].move();
-
-		for (int x = 1; x < points.length - 1; ++x)
-			for (int y = 1; y < points[x].length - 1; ++y)
-				points[x][y].run();
-
-		this.repaint();
 	}
 
 	public void clear() {
@@ -127,19 +115,9 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 
 		for (int x = 0; x < points.length; ++x)
 			for (int y = 0; y < points[x].length; ++y)
-				if (y == 0 || y >= points[x].length - 2)
+				if (y == 0 || y == points[x].length - 1)
 					points[x][y].type = 2;
-		
-		/*for (int x = 0; x < points.length; ++x) {
-			for (int y = 0; y < points[x].length; ++y) {
-				int a = points.length / 2;
-				int b = points.length / 4;
-				int c = points[0].length / 2;
-				int d = points[0].length / 4;
-				if(x >= a - 10 && x <= a + 10 && y >= c - 10 && y <= c + 10 && x + y <= a + 40 && y - x >= a - 50)
-					points[x][y].type = 2;
-			}
-		}*/
+
 		for (int x = 1; x < points.length - 1; ++x) {
 			for (int y = 1; y < points[x].length - 1; ++y) {
 				Point point = points[x][y];
@@ -217,13 +195,6 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 				if (point.type == 0 || point.type == 1) {
 					float c = point.getColorIntensity();
 					g.setColor(new Color(c, c, c));
-					// } else if (point.type == 1) {
-					// float a = 0.5f;
-
-					// if (point.isGuard())
-					// a = 1;
-
-					// g.setColor(new Color(a, a, a, point.color));
 				}
 
 				else if (point.type == 2) {
@@ -232,9 +203,27 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 				int x_offset = y % 2 == 1 ? 0 : sizeW / 2;
 				g.fillRect((x * sizeW) + 1 + x_offset, (y * sizeH) + 1, (sizeW - 1), (sizeH -
 						1));
+
+				int offset = 0;
+				if (y % 2 == 0)
+					offset += sizeW / 2;
+				drawFlowLine(g, point, x, y);
+
 			}
 		}
 
+	}
+
+	public void drawFlowLine(Graphics g, Point p, int pointX, int pointY) {
+		int x = pointX * sizeW + (sizeW / 2) + (pointY % 2 == 1 ? 0 : sizeW / 2);
+		int y = pointY * sizeH + (sizeH / 2);
+		g.setColor(Color.BLUE);
+
+		int h = (int) (0.3 * Math.cos(Math.toRadians(p.angle())) * sizeW);
+		int w = (int) (0.3 * Math.sin(Math.toRadians(p.angle())) * sizeH);
+
+		g.drawLine(x - w, y - h, x + w, y + h);
+		g.setColor(Color.BLACK);
 	}
 
 	public void interact(Point point, int type) {
