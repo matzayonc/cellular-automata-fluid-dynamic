@@ -264,18 +264,16 @@ public class Point implements Runnable {
 
 	public float angle() {
 		int s = 0;
-		for (int c : counts)
-			s += c;
-
-		if (s == 0)
-			return 0;
-
-		for (int i = 0; i < 6; ++i) {
-			s -= counts[i];
-			if (s <= 0)
-				return 30 - i * 360 / 6;
+		int n = 0;
+		for (int i = 0; i < 6; i++) {
+			s += counts[i] * i;
+			n += counts[i];
 		}
 
-		return 0;
+		if (n == 0)
+			return 0;
+
+		return 30 - 60 * s / n;
+
 	}
 }
