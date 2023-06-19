@@ -52,7 +52,7 @@ public class GUI extends JPanel implements ActionListener, ChangeListener {
 		pred.setMaximum(maxDelay);
 		pred.addChangeListener(this);
 		pred.setValue(maxDelay - timer.getDelay());
-		
+
 		drawType = new JComboBox<Integer>(Point.types);
 		drawType.addActionListener(this);
 		drawType.setActionCommand("drawType");
@@ -70,7 +70,7 @@ public class GUI extends JPanel implements ActionListener, ChangeListener {
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource().equals(timer)) {
 			iterNum++;
-			frame.setTitle("Sound simulation (" + Integer.toString(iterNum) + " iteration)");
+			frame.setTitle("Fluid simulation (" + Integer.toString(iterNum) + " iteration)");
 			board.iteration();
 		} else {
 			String command = e.getActionCommand();
@@ -91,9 +91,8 @@ public class GUI extends JPanel implements ActionListener, ChangeListener {
 				start.setEnabled(true);
 				board.clear();
 				frame.setTitle("Cellular Automata Toolbox");
-			}
-			else if (command.equals("drawType")){
-				int newType = (Integer)drawType.getSelectedItem();
+			} else if (command.equals("drawType")) {
+				int newType = (Integer) drawType.getSelectedItem();
 				board.editType = newType;
 			}
 
