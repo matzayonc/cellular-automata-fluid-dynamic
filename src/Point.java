@@ -23,12 +23,14 @@ public class Point implements Runnable {
 
 	public int in = 0;
 
+	/// Creates the point.
 	public Point(boolean isOnEdge) {
 		guard = isOnEdge;
 		recalculateLookup();
 		clear();
 	}
 
+	/// Calculates the lookup table for the automaton.
 	static public void recalculateLookup() {
 		if (lookupCalculated)
 			return;
@@ -55,6 +57,7 @@ public class Point implements Runnable {
 		}
 	}
 
+	/// Propagates the particle to the neighbors.
 	public void move() {
 		for (int i = 0; i < 6; i++)
 			if (outs[i]) {
@@ -72,6 +75,7 @@ public class Point implements Runnable {
 			}
 	}
 
+	/// Changes the state of the particle.
 	public void run() {
 		if (historySize > 0) {
 			history.add(in);
@@ -89,11 +93,13 @@ public class Point implements Runnable {
 				}
 			}
 		}
+
 		boolean p = Math.random() < 0.5;
 		fromInt(lookup[in | (p ? 1 : 0)]);
 		in = 0;
 	}
 
+	/// Saves the state of the particle in the form of a byte.
 	public int toInt(boolean p) {
 		int r = p ? 0 : 1;
 
@@ -109,12 +115,14 @@ public class Point implements Runnable {
 		return r;
 	}
 
+	/// Loads the state of the particle from the form of a byte.
 	public void fromInt(int i) {
 		staticParticle = (i & (1 << 7)) != 0;
 		for (int j = 0; j < 6; j++)
 			outs[j] = (i & (2 << j)) != 0;
 	}
 
+	/// Calculates next state for saving in the lookup table.
 	public void update(boolean p) {
 		collision2(p);
 		collision3(p);
@@ -127,6 +135,7 @@ public class Point implements Runnable {
 			}
 	}
 
+	/// Initializes the particle neighborhood.
 	public void setNeighbors(Point nw, Point ne, Point e, Point se, Point sw, Point w) {
 		neighbors[0] = nw;
 		neighbors[1] = ne;
@@ -136,15 +145,17 @@ public class Point implements Runnable {
 		neighbors[5] = w;
 	}
 
+	/// Creates a particles in every place where possible.
 	public void fill() {
 		type = 1;
 		staticParticle = true;
 		for (int i = 0; i < outs.length; ++i) {
 			outs[i] = true;
-			staticParticle = false;
+			staticParticle = true;
 		}
 	}
 
+	/// Clears all of the particle.
 	public void clear() {
 		type = 0;
 		staticParticle = false;
@@ -154,6 +165,7 @@ public class Point implements Runnable {
 		}
 	}
 
+	/// Makes the cell and its neighbors walls.
 	public void thickerDraw() {
 		for (Point n1 : neighbors) {
 			if (n1 != null)
@@ -167,10 +179,12 @@ public class Point implements Runnable {
 		}
 	}
 
+	/// Getter that checks if the particle is on the border.
 	public boolean isGuard() {
 		return guard;
 	}
 
+	/// Collision of two particles.
 	public void collision2(boolean p) {
 		if (ins[0] && ins[3]) {
 			if (p) {
@@ -244,6 +258,7 @@ public class Point implements Runnable {
 		}
 	}
 
+	/// Collision of three particles.
 	public void collision3(boolean p) {
 		if (ins[0] && ins[2] && ins[4]) {
 			outs[1] = true;
@@ -304,6 +319,7 @@ public class Point implements Runnable {
 		}
 	}
 
+	/// Calculates color based on the number of particles.
 	public float getColorIntensity() {
 		int c = 0;
 		for (int i = 0; i < 6; ++i)
@@ -315,12 +331,14 @@ public class Point implements Runnable {
 		return 1 - (c / 7.0f);
 	}
 
+	/// Creates particles with a given probability.
 	public void spawn(float chance) {
 		for (int i = 1; i <= 3; ++i)
 			if (Math.random() < chance)
 				outs[i % 6] = true;
 	}
 
+	/// Calculates the angle of the line based on the history.
 	public float angle() {
 		int s = 0;
 		int n = 0;
