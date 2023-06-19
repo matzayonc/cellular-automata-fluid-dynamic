@@ -139,13 +139,13 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 
 		rows.clear();
 		moveRows.clear();
-		int perRow = points[0].length + threads - 1 / threads;
+		int perRow = points.length + threads - 1 / threads;
 
 		for (int i = 0; i < threads; ++i) {
 			int start = i * perRow;
 			int end = (i + 1) * perRow;
-			if (end > points[0].length)
-				end = points[0].length;
+			if (end > points.length)
+				end = points.length;
 			rows.add(new Rows(start, end, points));
 			moveRows.add(new MoveRows(start, end, points));
 		}
