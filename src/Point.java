@@ -5,7 +5,7 @@ public class Point implements Runnable {
 	private boolean changed = true;
 
 	public Point[] neighbors = { null, null, null, null, null, null };
-	public static Integer[] types = { 0, 1, 2 };
+	public static Integer[] types = { 0, 1, 2, 3 };
 	public int type;
 	public int velocity;
 	public int vel_direction;
@@ -145,6 +145,19 @@ public class Point implements Runnable {
 		for (int i = 0; i < neighbors.length; ++i) {
 			ins[i] = false;
 			outs[i] = false;
+		}
+	}
+	
+	public void thickerDraw() {
+		for (Point n1: neighbors) {
+			if(n1 != null)
+			for(Point n2: n1.neighbors) {
+				if(n2 != null)
+				for(Point n3: n2.neighbors) {
+					if(n3 != null)
+					n3.type = 2;
+				}
+			}
 		}
 	}
 

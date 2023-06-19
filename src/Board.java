@@ -19,6 +19,7 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 	private int sizeW = (int) ((float) sizeH / (Math.sqrt(3) / 2.f));
 	public int editType = 0;
 
+
 	static final float flowRate = 0.5f;
 	static final int threads = 6;
 	ArrayList<Rows> rows = new ArrayList<>();
@@ -60,6 +61,7 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 
 		executor = Executors.newFixedThreadPool(threads);
 	}
+	
 
 	public void iteration() {
 		keepTime();
@@ -231,6 +233,8 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 			point.fill();
 		else if (type == 1)
 			point.clear();
+		else if (type == 3)
+			point.thickerDraw();
 	}
 
 	public void mouseClicked(MouseEvent e) {
