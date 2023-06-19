@@ -19,6 +19,7 @@ public class Point implements Runnable {
 	static int historySize = 50;
 
 	public static int[] lookup = new int[256];
+	public static boolean lookupCalculated = false;
 
 	public int in = 0;
 
@@ -28,24 +29,29 @@ public class Point implements Runnable {
 		clear();
 	}
 
-	public void recalculateLookup() {
+	static public void recalculateLookup() {
+		if (lookupCalculated)
+			return;
+		lookupCalculated = true;
+
+		Point point = new Point(false);
 		for (int i = 0; i < 256; i++) {
-			staticParticle = (i & (1 << 7)) != 0;
+			point.staticParticle = (i & (1 << 7)) != 0;
 			for (int j = 0; j < 6; j++)
-				ins[j] = (i & (2 << j)) != 0;
+				point.ins[j] = (i & (2 << j)) != 0;
 
 			boolean p = (i & 1) == 1;
-			update(p);
+			point.update(p);
 
 			int r = p ? 1 : 0;
 			for (int k = 0; k < 6; k++)
-				if (outs[k])
+				if (point.outs[k])
 					r |= 2 << k; // i += pow(2, i+1)
-			if (staticParticle)
+			if (point.staticParticle)
 				r |= 1 << 7;
 
 			lookup[i] = r;
-			clear();
+			point.clear();
 		}
 	}
 
@@ -147,17 +153,17 @@ public class Point implements Runnable {
 			outs[i] = false;
 		}
 	}
-	
+
 	public void thickerDraw() {
-		for (Point n1: neighbors) {
-			if(n1 != null)
-			for(Point n2: n1.neighbors) {
-				if(n2 != null)
-				for(Point n3: n2.neighbors) {
-					if(n3 != null)
-					n3.type = 2;
+		for (Point n1 : neighbors) {
+			if (n1 != null)
+				for (Point n2 : n1.neighbors) {
+					if (n2 != null)
+						for (Point n3 : n2.neighbors) {
+							if (n3 != null)
+								n3.type = 2;
+						}
 				}
-			}
 		}
 	}
 
@@ -238,7 +244,6 @@ public class Point implements Runnable {
 		}
 	}
 
-
 	public void collision3(boolean p) {
 		if (ins[0] && ins[2] && ins[4]) {
 			outs[1] = true;
@@ -257,46 +262,44 @@ public class Point implements Runnable {
 			ins[3] = false;
 			ins[5] = false;
 		}
-		for (int i=0;i<6;i++){
-			int j=(i+2)%6;
-			int k=(i+5)%6;
-			if(ins[i] && ins[j] && ins[k] && !staticParticle){
-				if(p){
-					outs[(1+i)%6]=true;
-					outs[(3+i)%6]=true;
-					outs[(4+i)%6]=true;
+		for (int i = 0; i < 6; i++) {
+			int j = (i + 2) % 6;
+			int k = (i + 5) % 6;
+			if (ins[i] && ins[j] && ins[k] && !staticParticle) {
+				if (p) {
+					outs[(1 + i) % 6] = true;
+					outs[(3 + i) % 6] = true;
+					outs[(4 + i) % 6] = true;
 
+				} else {
+					outs[(2 + i) % 6] = true;
+					outs[(4 + i) % 6] = true;
+					staticParticle = true;
 				}
-				else{
-					outs[(2+i)%6]=true;
-					outs[(4+i)%6]=true;
-					staticParticle=true;
-				}
-				ins[i]=false;
-				ins[j]=false;
-				ins[k]=false;
+				ins[i] = false;
+				ins[j] = false;
+				ins[k] = false;
 			}
 		}
-		for (int i=0;i<6;i++){
-			int j=(i+2)%6;
-			int k=(i+3)%6;
-			if(ins[i] && ins[j] && ins[k] && staticParticle){
-				if(p){
-					outs[(1+i)%6]=true;
-					outs[(4+i)%6]=true;
-					outs[(5+i)%6]=true;
+		for (int i = 0; i < 6; i++) {
+			int j = (i + 2) % 6;
+			int k = (i + 3) % 6;
+			if (ins[i] && ins[j] && ins[k] && staticParticle) {
+				if (p) {
+					outs[(1 + i) % 6] = true;
+					outs[(4 + i) % 6] = true;
+					outs[(5 + i) % 6] = true;
 
+				} else {
+					outs[i] = true;
+					outs[(2 + i) % 6] = true;
+					outs[(4 + i) % 6] = true;
+					outs[(5 + i) % 6] = true;
+					staticParticle = false;
 				}
-				else{
-					outs[i]=true;
-					outs[(2+i)%6]=true;
-					outs[(4+i)%6]=true;
-					outs[(5+i)%6]=true;
-					staticParticle=false;
-				}
-				ins[i]=false;
-				ins[j]=false;
-				ins[k]=false;
+				ins[i] = false;
+				ins[j] = false;
+				ins[k] = false;
 			}
 		}
 	}
