@@ -43,7 +43,7 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 			long endTime = System.currentTimeMillis();
 			if (startTime != 0)
 				System.out.println(
-						"Time for " + iterations + " iterations: " + (startTime - endTime) + " milliseconds");
+						"Iteration " + iterations + ", calculated in " + (endTime - startTime) + " milliseconds");
 			startTime = System.currentTimeMillis();
 
 		}
@@ -83,10 +83,6 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 
 		long endTime = System.currentTimeMillis();
 		long executionTime = endTime - startTime;
-
-		if (iterations % 100 == 0)
-			System.out.println(
-					"Move time: " + (moveTime - startTime) + ";\tExecution time: " + executionTime + " milliseconds");
 
 		for (int y = 1; y < points[0].length - 1; ++y) {
 			points[1][y].clear();
