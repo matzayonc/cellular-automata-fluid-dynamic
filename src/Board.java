@@ -19,9 +19,8 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 	private int sizeW = (int) ((float) sizeH / (Math.sqrt(3) / 2.f));
 	public int editType = 0;
 
-
-	static final float flowRate = 0.5f;
-	static final int threads = 6;
+	static final float flowRate = 0.5f; // Rate at which particles spawn on the right side of the board.
+	static final int threads = 6; // Number of threads to use for calculations.
 	ArrayList<Rows> rows = new ArrayList<>();
 	ArrayList<MoveRows> moveRows = new ArrayList<>();
 	ExecutorService executor = Executors.newFixedThreadPool(threads);
@@ -44,13 +43,14 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 			long endTime = System.currentTimeMillis();
 			if (startTime != 0)
 				System.out.println(
-						"Time for " + iterations + " iterations: " + (startTime - endTime) + " milliseconds");
+						"Iteration " + iterations + ", calculated in " + (endTime - startTime) + " milliseconds");
 			startTime = System.currentTimeMillis();
 
 		}
 		iterations++;
 	}
 
+	/// Waits for all threads to finish.
 	private void await() {
 		try {
 			executor.shutdown();
@@ -61,8 +61,8 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 
 		executor = Executors.newFixedThreadPool(threads);
 	}
-	
 
+	/// Calculates the new state of each of the points.
 	public void iteration() {
 		keepTime();
 
@@ -84,10 +84,6 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 		long endTime = System.currentTimeMillis();
 		long executionTime = endTime - startTime;
 
-		if (iterations % 100 == 0)
-			System.out.println(
-					"Move time: " + (moveTime - startTime) + ";\tExecution time: " + executionTime + " milliseconds");
-
 		for (int y = 1; y < points[0].length - 1; ++y) {
 			points[1][y].clear();
 			points[points.length - 2][y].clear();
@@ -96,6 +92,7 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 		this.repaint();
 	}
 
+	/// Clears the board.
 	public void clear() {
 		for (int x = 1; x < points.length - 1; ++x)
 			for (int y = 1; y < points[x].length - 1; ++y) {
@@ -104,20 +101,24 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 		this.repaint();
 	}
 
+	/// Initializes the board.
 	private void initialize(int length, int height) {
 		points = new Point[length][height];
 
+		// Creates cells
 		for (int x = 0; x < points.length; ++x)
 			for (int y = 0; y < points[x].length; ++y) {
 				boolean isOnEdge = (x == 0 || x == points.length - 1 || y == 0 || y == points[x].length - 1);
 				points[x][y] = new Point(isOnEdge);
 			}
 
+		// Sets the type of the cells on the edges to walls
 		for (int x = 0; x < points.length; ++x)
 			for (int y = 0; y < points[x].length; ++y)
 				if (y == 0 || y == points[x].length - 1)
 					points[x][y].type = 2;
 
+		// Sets the neighbors of each cell
 		for (int x = 1; x < points.length - 1; ++x) {
 			for (int y = 1; y < points[x].length - 1; ++y) {
 				Point point = points[x][y];
@@ -141,6 +142,7 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 		moveRows.clear();
 		int perRow = points.length + threads - 1 / threads;
 
+		/// Groups the rows into groups of threads.
 		for (int i = 0; i < threads; ++i) {
 			int start = i * perRow;
 			int end = (i + 1) * perRow;
@@ -151,6 +153,7 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 		}
 	}
 
+	/// Draws the board.
 	protected void paintComponent(Graphics g) {
 		if (isOpaque()) {
 			g.setColor(getBackground());
@@ -160,6 +163,7 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 		drawNetting(g);
 	}
 
+	/// Draws the netting.
 	private void drawNetting(Graphics g) {
 		Insets insets = getInsets();
 		int firstX = insets.left;
@@ -214,6 +218,7 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 
 	}
 
+	/// Draws the flow lines.
 	public void drawFlowLine(Graphics g, Point p, int pointX, int pointY) {
 		int x = pointX * sizeW + (sizeW / 2) + (pointY % 2 == 1 ? 0 : sizeW / 2);
 		int y = pointY * sizeH + (sizeH / 2);
@@ -226,6 +231,7 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 		g.setColor(Color.BLACK);
 	}
 
+	/// Sets the type of the cells.
 	public void interact(Point point, int type) {
 		point.type = editType;
 

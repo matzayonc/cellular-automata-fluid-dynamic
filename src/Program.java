@@ -6,7 +6,7 @@ public class Program extends JFrame {
 	private GUI gof;
 
 	public Program() {
-		setTitle("Sound simulation");
+		setTitle("Fluid simulation");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		gof = new GUI(this);

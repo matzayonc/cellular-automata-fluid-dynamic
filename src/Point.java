@@ -19,36 +19,45 @@ public class Point implements Runnable {
 	static int historySize = 50;
 
 	public static int[] lookup = new int[256];
+	public static boolean lookupCalculated = false;
 
 	public int in = 0;
 
+	/// Creates the point.
 	public Point(boolean isOnEdge) {
 		guard = isOnEdge;
 		recalculateLookup();
 		clear();
 	}
 
-	public void recalculateLookup() {
+	/// Calculates the lookup table for the automaton.
+	static public void recalculateLookup() {
+		if (lookupCalculated)
+			return;
+		lookupCalculated = true;
+
+		Point point = new Point(false);
 		for (int i = 0; i < 256; i++) {
-			staticParticle = (i & (1 << 7)) != 0;
+			point.staticParticle = (i & (1 << 7)) != 0;
 			for (int j = 0; j < 6; j++)
-				ins[j] = (i & (2 << j)) != 0;
+				point.ins[j] = (i & (2 << j)) != 0;
 
 			boolean p = (i & 1) == 1;
-			update(p);
+			point.update(p);
 
 			int r = p ? 1 : 0;
 			for (int k = 0; k < 6; k++)
-				if (outs[k])
+				if (point.outs[k])
 					r |= 2 << k; // i += pow(2, i+1)
-			if (staticParticle)
+			if (point.staticParticle)
 				r |= 1 << 7;
 
 			lookup[i] = r;
-			clear();
+			point.clear();
 		}
 	}
 
+	/// Propagates the particle to the neighbors.
 	public void move() {
 		for (int i = 0; i < 6; i++)
 			if (outs[i]) {
@@ -66,6 +75,7 @@ public class Point implements Runnable {
 			}
 	}
 
+	/// Changes the state of the particle.
 	public void run() {
 		if (historySize > 0) {
 			history.add(in);
@@ -83,11 +93,13 @@ public class Point implements Runnable {
 				}
 			}
 		}
+
 		boolean p = Math.random() < 0.5;
 		fromInt(lookup[in | (p ? 1 : 0)]);
 		in = 0;
 	}
 
+	/// Saves the state of the particle in the form of a byte.
 	public int toInt(boolean p) {
 		int r = p ? 0 : 1;
 
@@ -103,12 +115,14 @@ public class Point implements Runnable {
 		return r;
 	}
 
+	/// Loads the state of the particle from the form of a byte.
 	public void fromInt(int i) {
 		staticParticle = (i & (1 << 7)) != 0;
 		for (int j = 0; j < 6; j++)
 			outs[j] = (i & (2 << j)) != 0;
 	}
 
+	/// Calculates next state for saving in the lookup table.
 	public void update(boolean p) {
 		collision2(p);
 		collision3(p);
@@ -121,6 +135,7 @@ public class Point implements Runnable {
 			}
 	}
 
+	/// Initializes the particle neighborhood.
 	public void setNeighbors(Point nw, Point ne, Point e, Point se, Point sw, Point w) {
 		neighbors[0] = nw;
 		neighbors[1] = ne;
@@ -130,15 +145,17 @@ public class Point implements Runnable {
 		neighbors[5] = w;
 	}
 
+	/// Creates a particles in every place where possible.
 	public void fill() {
 		type = 1;
 		staticParticle = true;
 		for (int i = 0; i < outs.length; ++i) {
 			outs[i] = true;
-			staticParticle = false;
+			staticParticle = true;
 		}
 	}
 
+	/// Clears all of the particle.
 	public void clear() {
 		type = 0;
 		staticParticle = false;
@@ -147,24 +164,27 @@ public class Point implements Runnable {
 			outs[i] = false;
 		}
 	}
-	
+
+	/// Makes the cell and its neighbors walls.
 	public void thickerDraw() {
-		for (Point n1: neighbors) {
-			if(n1 != null)
-			for(Point n2: n1.neighbors) {
-				if(n2 != null)
-				for(Point n3: n2.neighbors) {
-					if(n3 != null)
-					n3.type = 2;
+		for (Point n1 : neighbors) {
+			if (n1 != null)
+				for (Point n2 : n1.neighbors) {
+					if (n2 != null)
+						for (Point n3 : n2.neighbors) {
+							if (n3 != null)
+								n3.type = 2;
+						}
 				}
-			}
 		}
 	}
 
+	/// Getter that checks if the particle is on the border.
 	public boolean isGuard() {
 		return guard;
 	}
 
+	/// Collision of two particles.
 	public void collision2(boolean p) {
 		if (ins[0] && ins[3]) {
 			if (p) {
@@ -238,7 +258,7 @@ public class Point implements Runnable {
 		}
 	}
 
-
+	/// Collision of three particles.
 	public void collision3(boolean p) {
 		if (ins[0] && ins[2] && ins[4]) {
 			outs[1] = true;
@@ -257,50 +277,49 @@ public class Point implements Runnable {
 			ins[3] = false;
 			ins[5] = false;
 		}
-		for (int i=0;i<6;i++){
-			int j=(i+2)%6;
-			int k=(i+5)%6;
-			if(ins[i] && ins[j] && ins[k] && !staticParticle){
-				if(p){
-					outs[(1+i)%6]=true;
-					outs[(3+i)%6]=true;
-					outs[(4+i)%6]=true;
+		for (int i = 0; i < 6; i++) {
+			int j = (i + 2) % 6;
+			int k = (i + 5) % 6;
+			if (ins[i] && ins[j] && ins[k] && !staticParticle) {
+				if (p) {
+					outs[(1 + i) % 6] = true;
+					outs[(3 + i) % 6] = true;
+					outs[(4 + i) % 6] = true;
 
+				} else {
+					outs[(2 + i) % 6] = true;
+					outs[(4 + i) % 6] = true;
+					staticParticle = true;
 				}
-				else{
-					outs[(2+i)%6]=true;
-					outs[(4+i)%6]=true;
-					staticParticle=true;
-				}
-				ins[i]=false;
-				ins[j]=false;
-				ins[k]=false;
+				ins[i] = false;
+				ins[j] = false;
+				ins[k] = false;
 			}
 		}
-		for (int i=0;i<6;i++){
-			int j=(i+2)%6;
-			int k=(i+3)%6;
-			if(ins[i] && ins[j] && ins[k] && staticParticle){
-				if(p){
-					outs[(1+i)%6]=true;
-					outs[(4+i)%6]=true;
-					outs[(5+i)%6]=true;
+		for (int i = 0; i < 6; i++) {
+			int j = (i + 2) % 6;
+			int k = (i + 3) % 6;
+			if (ins[i] && ins[j] && ins[k] && staticParticle) {
+				if (p) {
+					outs[(1 + i) % 6] = true;
+					outs[(4 + i) % 6] = true;
+					outs[(5 + i) % 6] = true;
 
+				} else {
+					outs[i] = true;
+					outs[(2 + i) % 6] = true;
+					outs[(4 + i) % 6] = true;
+					outs[(5 + i) % 6] = true;
+					staticParticle = false;
 				}
-				else{
-					outs[i]=true;
-					outs[(2+i)%6]=true;
-					outs[(4+i)%6]=true;
-					outs[(5+i)%6]=true;
-					staticParticle=false;
-				}
-				ins[i]=false;
-				ins[j]=false;
-				ins[k]=false;
+				ins[i] = false;
+				ins[j] = false;
+				ins[k] = false;
 			}
 		}
 	}
 
+	/// Calculates color based on the number of particles.
 	public float getColorIntensity() {
 		int c = 0;
 		for (int i = 0; i < 6; ++i)
@@ -312,12 +331,14 @@ public class Point implements Runnable {
 		return 1 - (c / 7.0f);
 	}
 
+	/// Creates particles with a given probability.
 	public void spawn(float chance) {
 		for (int i = 1; i <= 3; ++i)
 			if (Math.random() < chance)
 				outs[i % 6] = true;
 	}
 
+	/// Calculates the angle of the line based on the history.
 	public float angle() {
 		int s = 0;
 		int n = 0;
