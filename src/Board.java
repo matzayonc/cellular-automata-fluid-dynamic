@@ -240,6 +240,8 @@ public class Board extends JComponent implements MouseInputListener, ComponentLi
 		else if (type == 1)
 			point.clear();
 		else if (type == 3)
+			point.thickDraw();
+		else if (type == 4)
 			point.thickerDraw();
 	}
 

@@ -5,7 +5,7 @@ public class Point implements Runnable {
 	private boolean changed = true;
 
 	public Point[] neighbors = { null, null, null, null, null, null };
-	public static Integer[] types = { 0, 1, 2, 3 };
+	public static Integer[] types = { 0, 1, 2, 3, 4 };
 	public int type;
 	public int velocity;
 	public int vel_direction;
@@ -162,6 +162,15 @@ public class Point implements Runnable {
 		for (int i = 0; i < neighbors.length; ++i) {
 			ins[i] = false;
 			outs[i] = false;
+		}
+	}
+	
+	/// Makes the cell and its neighbors walls.
+	public void thickDraw() {
+		type = 2;
+		for (Point n1 : neighbors) {
+			if (n1 != null)
+				n1.type = 2;
 		}
 	}
 
